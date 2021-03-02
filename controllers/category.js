@@ -33,7 +33,7 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
     try {
         const deleted = await Category.findOneAndDelete({ slug: req.params.slug })
-        res.json(`Category ${deleted.name} deleted`)
+        res.json(deleted)
     } catch (err) {
         res.status(400).send('Category delete failed')
     }
