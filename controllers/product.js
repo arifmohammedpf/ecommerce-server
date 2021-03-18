@@ -66,3 +66,20 @@ exports.update = async (req, res) => {
     });
   }
 };
+
+exports.list = async (req, res) => {
+  try {
+    //createdAt/updatedAt(sort), desc/asc(order), 3(limit)
+    const { sort, order, limit } = req.body;
+    const products = await Product.find({})
+      .populate("category")
+      .populate("subs")
+      .sort([[sort, order]])
+      .limit(limit)
+      .exec();
+
+    res.json(products);
+  } catch (err) {
+    console.log(err);
+  }
+};
