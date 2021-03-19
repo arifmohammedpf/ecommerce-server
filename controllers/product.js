@@ -1,4 +1,5 @@
 const Product = require("../models/product");
+const User = require("../models/user");
 const slugify = require("slugify");
 
 exports.create = async (req, res) => {
@@ -113,14 +114,14 @@ exports.productsCount = async (req, res) => {
 };
 
 exports.productStar = async (req, res) => {
-  const product = await Product.findById(req.params.id).exec();
+  const product = await Product.findById(req.params.productId).exec();
   const user = await User.findOne({ email: req.user.email }).exec();
   const { star } = req.body;
 
   //who is updating?
   //check if user already rated the product
   let existingRatingObject = product.ratings.find(
-    (element) => element.postedBy.toString() === user._id.toString()
+    (elem) => elem.postedBy.toString() === user._id.toString()
   );
 
   //if user haven't rated yet, push it
@@ -128,7 +129,7 @@ exports.productStar = async (req, res) => {
     let ratingAdded = await Product.findByIdAndUpdate(
       product._id,
       {
-        $push: { ratings: { star: star, postedBy: user._id } }, //$push is mongoose way to update array
+        $push: { ratings: { star, postedBy: user._id } }, //$push is mongoose way to update array
       },
       { new: true }
     ).exec();
