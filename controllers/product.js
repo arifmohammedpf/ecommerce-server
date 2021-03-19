@@ -111,3 +111,37 @@ exports.productsCount = async (req, res) => {
   let total = await Product.find({}).estimatedDocumentCount().exec();
   res.json(total);
 };
+
+exports.productStar = async (req, res) => {
+  const product = await Product.findById(req.params.id).exec();
+  const user = await User.findOne({ email: req.user.email }).exec();
+  const { star } = req.body;
+
+  //who is updating?
+  //check if user already rated the product
+  let existingRatingObject = product.ratings.find(
+    (element) => element.postedBy.toString() === user._id.toString()
+  );
+
+  //if user haven't rated yet, push it
+  if (existingRatingObject === undefined) {
+    let ratingAdded = await Product.findByIdAndUpdate(
+      product._id,
+      {
+        $push: { ratings: { star: star, postedBy: user._id } }, //$push is mongoose way to update array
+      },
+      { new: true }
+    ).exec();
+    console.log("ratingsAdded ---> ", ratingAdded);
+    res.json(ratingAdded);
+  } else {
+    //if user have already rated, update it
+    const ratingUpdated = await Product.updateOne(
+      { ratings: { $elemMatch: existingRatingObject } },
+      { $set: { "ratings.$.star": star } }, //'$' is mongoose way..check docs
+      { new: true }
+    ).exec();
+    console.log(ratingUpdated);
+    res.json(ratingUpdated);
+  }
+};
